@@ -4,6 +4,7 @@ class Chip {
 		this.py = Math.round(py);
 		this.sx = Math.round(sx);
 		this.sy = Math.round(sy);
+      this.pins = [];
 
       if(this.py-1 >= 0){
          this.place_pins(this.px, this.py-1, this.px+this.sx, this.py-1, 0, -1, this.sx);
@@ -58,7 +59,7 @@ class Chip {
       ctx.fillText(this.text, this.px*cell_size[0]+this.sx*cell_size[0]/8, this.py*cell_size[1]+this.sy*cell_size[1]/2);
 	}
 
-	pins = [];
+
 }
 
 class Pin{
@@ -109,6 +110,7 @@ class Connexion{
 	constructor(pin0, pin1){
 		this.pin0 = pin0;
 		this.pin1 = pin1;
+      this.lines = [];
 	}
 
 	find_connexion(){
@@ -522,8 +524,6 @@ class Connexion{
 
       return {startx:startx, starty:starty, endx:endx, endy:endy};
    }
-
-	lines = [];
 }
 
 
