@@ -567,6 +567,108 @@ class End_Element{
    }
 }
 
+class Transistor{
+   constructor(posx, posy){
+      this.posx = posx;
+      this.posy = posy;
+      this.orientation = "W";
+      this.pins = [];
+
+      var rand = Math.random();
+      if(rand >= 0 && rand <= 0.25)
+         this.orientation = "N";
+      if(rand >= 0.25 && rand <= 0.5)
+         this.orientation = "W";
+      if(rand >= 0.5 && rand <= 0.75)
+         this.orientation = "S";
+      if(rand >= 0.75 && rand <= 1.0)
+         this.orientation = "E";
+
+      if(this.orientation == "N"){
+         this.place_pin(posx+1, posy-1, 0, -1);
+         this.place_pin(posx-1, posy+2, -1, 0);
+         this.place_pin(posx+3, posy+2, 1, 0);
+      }
+      else if(this.orientation == "W"){
+         this.place_pin(posx+2, posy-1, 0, -1);
+         this.place_pin(posx+2, posy+3, 0, 1);
+         this.place_pin(posx-1, posy+1, -1, 0);
+      }
+      else if(this.orientation == "S"){
+         this.place_pin(posx+1, posy+3, 0, 1);
+         this.place_pin(posx-1, posy+0, -1, 0);
+         this.place_pin(posx+3, posy+0, 1, 0);
+      }
+      else if(this.orientation == "E"){
+         this.place_pin(posx+0, posy-1, 0, -1);
+         this.place_pin(posx+0, posy+3, 0, 1);
+         this.place_pin(posx+3, posy+1, 1, 0);
+      }
+
+   }
+
+   place_pin(posx, posy, normx, normy){
+      this.pins.push(new Pin(posx, posy, normx, normy, 0));
+      occupation[posx][posy] = 1;
+   }
+
+   draw(){
+      var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+      ctx.strokeStyle = "#000000";
+      ctx.fillStyle = "#FFFFFF";
+      ctx.fillRect(this.posx*cell_size[0], this.posy*cell_size[1], cell_size[0]*3, cell_size[1]*3);
+      for (var i = 0; i < this.pins.length; i++) {
+         this.pins[i].draw();
+      }
+      var rot = 0;
+      if(this.orientation == "W"){
+         rot = 0;
+      }
+      else if(this.orientation == "N"){
+         rot = 3.1415/2;
+      }
+      else if(this.orientation == "E"){
+         rot = 3.1415;
+      }
+      else if(this.orientation == "S"){
+         rot = 3*3.1415/2;
+      }
+      this.draw_picture([Math.cos(rot),-Math.sin(rot),Math.sin(rot),Math.cos(rot)]);
+
+   }
+
+   //dirty function, values were calculated on a sheet of paper and hard coded here
+   draw_picture(rot_mat){
+      var canvas = document.getElementById("myCanvas");
+		var ctx = canvas.getContext("2d");
+      ctx.beginPath();
+      ctx.arc(this.posx*cell_size[0]+cell_size[0]*3/2, this.posy*cell_size[1]+cell_size[1]*3/2, cell_size[0]*3/2, 0, 2 * Math.PI);
+      ctx.stroke();
+      ctx.beginPath();
+      var gposx = this.posx*cell_size[0];
+      var gposy = this.posy*cell_size[1];
+      var midx = cell_size[0]*3/2;
+      var midy = cell_size[1]*3/2;
+      //extentions of out pins
+      ctx.moveTo( gposx+midx+(cell_size[0]*2/2)*rot_mat[0]+(-cell_size[1]*3/2)*rot_mat[1], gposy+midy+(cell_size[0]*2/2)*rot_mat[2]+(-cell_size[1]*3/2)*rot_mat[3] );
+      ctx.lineTo( gposx+midx+(cell_size[0]*2/2)*rot_mat[0]+(-cell_size[1]*2/2)*rot_mat[1], gposy+midy+(cell_size[0]*2/2)*rot_mat[2]+(-cell_size[1]*2/2)*rot_mat[3] );
+      ctx.moveTo( gposx+midx+(cell_size[0]*2/2)*rot_mat[0]+(cell_size[1]*3/2)*rot_mat[1], gposy+midy+(cell_size[0]*2/2)*rot_mat[2]+(cell_size[1]*3/2)*rot_mat[3] );
+      ctx.lineTo( gposx+midx+(cell_size[0]*2/2)*rot_mat[0]+(cell_size[1]*2/2)*rot_mat[1], gposy+midy+(cell_size[0]*2/2)*rot_mat[2]+(cell_size[1]*2/2)*rot_mat[3] );
+      ctx.moveTo( gposx+midx+(-cell_size[0]*3/2)*rot_mat[0]+(cell_size[1]*0/2)*rot_mat[1], gposy+midy+(-cell_size[0]*3/2)*rot_mat[2]+(cell_size[1]*0/2)*rot_mat[3] );
+      ctx.lineTo( gposx+midx+(-cell_size[0]*1/2)*rot_mat[0]+(cell_size[1]*0/2)*rot_mat[1], gposy+midy+(-cell_size[0]*1/2)*rot_mat[2]+(cell_size[1]*0/2)*rot_mat[3] );
+      //middle bar
+      ctx.moveTo( gposx+midx+(-cell_size[0]*1/2)*rot_mat[0]+(-cell_size[1]*2/2)*rot_mat[1], gposy+midy+(-cell_size[0]*1/2)*rot_mat[2]+(-cell_size[1]*2/2)*rot_mat[3] );
+      ctx.lineTo( gposx+midx+(-cell_size[0]*1/2)*rot_mat[0]+(cell_size[1]*2/2)*rot_mat[1], gposy+midy+(-cell_size[0]*1/2)*rot_mat[2]+(cell_size[1]*2/2)*rot_mat[3] );
+      //two diagonals
+      ctx.moveTo( gposx+midx+(cell_size[0]*2/2)*rot_mat[0]+(-cell_size[1]*2/2)*rot_mat[1], gposy+midy+(cell_size[0]*2/2)*rot_mat[2]+(-cell_size[1]*2/2)*rot_mat[3] );
+      ctx.lineTo( gposx+midx+(-cell_size[0]*1/2)*rot_mat[0]+(-cell_size[1]*1/2)*rot_mat[1], gposy+midy+(-cell_size[0]*1/2)*rot_mat[2]+(-cell_size[1]*1/2)*rot_mat[3] );
+      ctx.moveTo( gposx+midx+(cell_size[0]*2/2)*rot_mat[0]+(cell_size[1]*2/2)*rot_mat[1], gposy+midy+(cell_size[0]*2/2)*rot_mat[2]+(cell_size[1]*2/2)*rot_mat[3] );
+      ctx.lineTo( gposx+midx+(-cell_size[0]*1/2)*rot_mat[0]+(cell_size[1]*1/2)*rot_mat[1], gposy+midy+(-cell_size[0]*1/2)*rot_mat[2]+(cell_size[1]*1/2)*rot_mat[3] );
+      ctx.stroke();
+   }
+}
+
 size_canvas = [1600, 900];
 cell_size = [14, 14];
 grid_size = [size_canvas[0]/cell_size[0], size_canvas[1]/cell_size[1]];
@@ -579,6 +681,9 @@ nb_chips = nb_chips_side_x*nb_chips_side_y;
 
 lst_end_elem = [];
 nb_end_elem = 30;
+
+lst_transistors = [];
+nb_transistors = 7;
 
 occupation = [];
 
@@ -640,6 +745,38 @@ for(i = 0; i < nb_chips; i++){
    }
 }
 
+for (var i = 0; i < nb_transistors; i++) {
+   var rand_x = Math.round(Math.random()*grid_size[0]);
+   var rand_y = Math.round(Math.random()*grid_size[1]);
+
+   var is_free = true;
+   for (var x = rand_x; x < rand_x+3; x++) {
+      for (var y = rand_y; y < rand_y+3; y++) {
+         //find if this is a good place, otherwise delete it
+         if(occupation[x][y] == 1)
+            is_free = false;
+         if(x-1 < 0 || occupation[x-1][y] == 1)
+            is_free = false;
+         if(x+1 >= grid_size[0] || occupation[x+1][y] == 1)
+            is_free = false;
+         if(y-1 < 0 || occupation[x][y-1] == 1)
+            is_free = false;
+         if(y+1 >= grid_size[1] || occupation[x][y+1] == 1)
+            is_free = false;
+      }
+   }
+
+   if(is_free){
+      lst_transistors.push(new Transistor(rand_x, rand_y));
+      for (var x = rand_x; x < rand_x+3; x++) {
+         for (var y = rand_y; y < rand_y+3; y++) {
+            occupation[x][y] = 1;
+         }
+      }
+   }
+}
+
+//place end elements (gnd, vcc, i/o)
 for (var i = 0; i < nb_end_elem; i++) {
    var rand_x = Math.round(Math.random()*grid_size[0]);
    var rand_y = Math.round(Math.random()*grid_size[1]);
@@ -661,22 +798,72 @@ for (var i = 0; i < nb_end_elem; i++) {
 }
 nb_end_elem = lst_end_elem.length;
 
-//place end elements (gnd, vcc, i/o)
+//place wires to transistors
+// for (var i = 0; i < nb_end_elem; i++) {
+//
+//    var lst_chip_dst = [];
+//    for (var l = 0; l < nb_chips; l++) {
+//       var centrex = lst_chip[l].px + lst_chip[l].sx/2;
+//       var centrey = lst_chip[l].py + lst_chip[l].sy/2;
+//       var elemx = lst_end_elem[i].posx;
+//       var elemy = lst_end_elem[i].posy;
+//       var dist = Math.sqrt(Math.pow(centrex-elemx, 2)+Math.pow(centrey-elemy, 2));
+//       lst_chip_dst.push({dist:dist, chip:lst_chip[l]});
+//    }
+//    lst_chip_dst.sort(function(a, b){return a.dist-b.dist}); //smallest first
+//
+//    for (var l = 0; l < 4; l++) { //only take nearest chips
+//    	var endelem = lst_end_elem[i];
+//    	var pins1 = lst_chip_dst[l].chip.pins;
+//
+//       var lst_pin_dist = [];
+//       for(j = 0; j < pins1.length; j++){
+//          var dist = Math.sqrt(Math.pow(pins1[j].posx-endelem.posx, 2)+Math.pow(pins1[j].posy-endelem.posy, 2));
+//          lst_pin_dist.push({dist:dist, pin:pins1[j]});
+//       }
+//       lst_pin_dist.sort(function(a, b){return a.dist-b.dist}); //smallest first
+//
+//    	for(j = 0; j < pins1.length; j++){
+// 			var pin1 = lst_pin_dist[j].pin;
+//    		if(endelem.used == 0 && pin1.used == 0 && Math.random() > 0.0){
+//    			connexion = new Connexion(pin1, endelem);
+//    			if(connexion.find_connexion()){
+//    				lst_connexion.push(connexion);
+//    				endelem.used = 1;
+//    				pin1.used = 1;
+//    			}
+//    		}
+//    	}
+//    }
+// }
+
+var lst_pins = [];
+for (var i = 0; i < lst_transistors.length; i++) {
+   lst_pins.push(lst_transistors[i].pins[0]);
+   lst_pins.push(lst_transistors[i].pins[1]);
+   lst_pins.push(lst_transistors[i].pins[2]);
+}
+
 for (var i = 0; i < nb_end_elem; i++) {
+   lst_pins.push(lst_end_elem[i]);
+}
+
+//place wires to end elem
+for (var i = 0; i < lst_pins.length; i++) {
 
    var lst_chip_dst = [];
    for (var l = 0; l < nb_chips; l++) {
       var centrex = lst_chip[l].px + lst_chip[l].sx/2;
       var centrey = lst_chip[l].py + lst_chip[l].sy/2;
-      var elemx = lst_end_elem[i].posx;
-      var elemy = lst_end_elem[i].posy;
+      var elemx = lst_pins[i].posx;
+      var elemy = lst_pins[i].posy;
       var dist = Math.sqrt(Math.pow(centrex-elemx, 2)+Math.pow(centrey-elemy, 2));
       lst_chip_dst.push({dist:dist, chip:lst_chip[l]});
    }
    lst_chip_dst.sort(function(a, b){return a.dist-b.dist}); //smallest first
 
    for (var l = 0; l < 4; l++) { //only take nearest chips
-   	var endelem = lst_end_elem[i];
+   	var endelem = lst_pins[i];
    	var pins1 = lst_chip_dst[l].chip.pins;
 
       var lst_pin_dist = [];
@@ -716,6 +903,10 @@ for (var i = 0; i < lst_connexion.length; i++) {
 
 for (var i = 0; i < nb_end_elem; i++) {
    lst_end_elem[i].draw();
+}
+
+for (var i = 0; i < lst_transistors.length; i++) {
+   lst_transistors[i].draw();
 }
 
 //draw occupation
