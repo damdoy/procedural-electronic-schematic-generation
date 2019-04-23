@@ -40,7 +40,7 @@ class Chip {
 		var increment_y = (start_y == end_y ? 0 : 1);
 
 		for(i = 0; i < pin_nb; i++){
-			if(Math.random() > 0.3){ //prob to have a pin here
+			if(Math.random() > 0.4){ //prob to have a pin here
 				this.pins.push(new Pin(start_x+increment_x*i, start_y+increment_y*i, normx, normy, 0));
 				occupation[start_x+increment_x*i][start_y+increment_y*i] = 1;
 			}
@@ -557,7 +557,11 @@ class End_Element{
          }
          else{ //draw a pin in out
             ctx.fillRect(this.posx*cell_size[0], this.posy*cell_size[1], cell_size[0], cell_size[1]);
-            ctx.strokeRect(this.posx*cell_size[0], this.posy*cell_size[1], cell_size[0], cell_size[1]);
+            ctx.beginPath();
+            ctx.arc(this.posx*cell_size[0]+cell_size[0]/2, this.posy*cell_size[1]+cell_size[1]/2, cell_size[0]/2, 0, 2 * Math.PI);
+            ctx.stroke();
+
+            // ctx.strokeRect(this.posx*cell_size[0], this.posy*cell_size[1], cell_size[0], cell_size[1]);
          }
       }
    }
