@@ -1,80 +1,80 @@
 class Chip {
-	constructor(px, py, sx, sy){
-		this.px = Math.round(px);
-		this.py = Math.round(py);
-		this.sx = Math.round(sx);
-		this.sy = Math.round(sy);
+   constructor(px, py, sx, sy){
+      this.px = Math.round(px);
+      this.py = Math.round(py);
+      this.sx = Math.round(sx);
+      this.sy = Math.round(sy);
       this.pins = [];
 
       if(this.py-1 >= 0){
          this.place_pins(this.px, this.py-1, this.px+this.sx, this.py-1, 0, -1, this.sx);
       }
-		this.place_pins(this.px+this.sx, this.py, this.px+this.sx, this.py+this.sy, 1, 0, this.sy);
+      this.place_pins(this.px+this.sx, this.py, this.px+this.sx, this.py+this.sy, 1, 0, this.sy);
       if(this.px-1 >= 0){
          this.place_pins(this.px-1, this.py, this.px-1, this.py+this.sy, -1, 0, this.sy);
       }
-		this.place_pins(this.px, this.py+this.sy, this.px+this.sx, this.py+this.sy, 0, 1, this.sx);
+      this.place_pins(this.px, this.py+this.sy, this.px+this.sx, this.py+this.sy, 0, 1, this.sx);
 
-		var i;
-		var j;
+      var i;
+      var j;
 
-		for(i = this.px; i < this.px+this.sx; i++){
-			for(j = this.py; j < this.py+this.sy; j++){
-				occupation[i][j] = 1;
-			}
-		}
+      for(i = this.px; i < this.px+this.sx; i++){
+         for(j = this.py; j < this.py+this.sy; j++){
+            occupation[i][j] = 1;
+         }
+      }
 
       this.text = "chip"
-	}
+   }
 
    set_text(text){
       this.text = text;
    }
 
    //places pins randomly around chip
-	place_pins(start_x, start_y, end_x, end_y, normx, normy, pin_nb){
+   place_pins(start_x, start_y, end_x, end_y, normx, normy, pin_nb){
 
-		var i;
+      var i;
 
-		var increment_x = (start_x == end_x ? 0 : 1);
-		var increment_y = (start_y == end_y ? 0 : 1);
+      var increment_x = (start_x == end_x ? 0 : 1);
+      var increment_y = (start_y == end_y ? 0 : 1);
 
-		for(i = 0; i < pin_nb; i++){
-			if(Math.random() > 0.4){ //prob to have a pin here
-				this.pins.push(new Pin(start_x+increment_x*i, start_y+increment_y*i, normx, normy, 0));
-				occupation[start_x+increment_x*i][start_y+increment_y*i] = 1;
-			}
-		}
-	}
+      for(i = 0; i < pin_nb; i++){
+         if(Math.random() > 0.4){ //prob to have a pin here
+            this.pins.push(new Pin(start_x+increment_x*i, start_y+increment_y*i, normx, normy, 0));
+            occupation[start_x+increment_x*i][start_y+increment_y*i] = 1;
+         }
+      }
+   }
 
-	draw(){
-		var canvas = document.getElementById("myCanvas");
-		var ctx = canvas.getContext("2d");
-		ctx.strokeStyle = "#000000";
-		ctx.rect(this.px*cell_size[0], this.py*cell_size[1], this.sx*cell_size[0], this.sy*cell_size[1]);
-		ctx.stroke();
+   draw(){
+      var canvas = document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");
+      ctx.strokeStyle = "#000000";
+      ctx.rect(this.px*cell_size[0], this.py*cell_size[1], this.sx*cell_size[0], this.sy*cell_size[1]);
+      ctx.stroke();
 
 
       ctx.font = "12px Arial";
       ctx.fillText(this.text, this.px*cell_size[0]+this.sx*cell_size[0]/8, this.py*cell_size[1]+this.sy*cell_size[1]/2);
-	}
+   }
 
 
 }
 
 class Pin{
-	constructor(posx, posy, normx, normy, used){
-		this.posx = posx;
-		this.posy = posy;
-		this.normx = normx;
-		this.normy = normy;
-		this.used = used;
-	}
+   constructor(posx, posy, normx, normy, used){
+      this.posx = posx;
+      this.posy = posy;
+      this.normx = normx;
+      this.normy = normy;
+      this.used = used;
+   }
 
    //draws a little line to represent the pin from the chip
-	draw(){
-		var canvas = document.getElementById("myCanvas");
-		var ctx = canvas.getContext("2d");
+   draw(){
+      var canvas = document.getElementById("myCanvas");
+      var ctx = canvas.getContext("2d");
 
       var startx = 0;
       var starty = 0;
@@ -103,50 +103,50 @@ class Pin{
       ctx.moveTo(startx, starty);
       ctx.lineTo(centrex, centrey);
       ctx.stroke();
-	}
+   }
 }
 
 class Connexion{
-	constructor(pin0, pin1){
-		this.pin0 = pin0;
-		this.pin1 = pin1;
+   constructor(pin0, pin1){
+      this.pin0 = pin0;
+      this.pin1 = pin1;
       this.lines = [];
-	}
+   }
 
-	find_connexion(){
-		//a* algo (or tentative), heuristic is direct distance between node and end
+   find_connexion(){
+      //a* algo (or tentative), heuristic is direct distance between node and end
 
-		var visited_nodes = []; //[visited, nextx, nexty, start, end, has_next, cost, posx, posy]
+      var visited_nodes = []; //[visited, nextx, nexty, start, end, has_next, cost, posx, posy]
       var list_to_handle = [];
-		var startx = 0;
-		var starty = 0;
+      var startx = 0;
+      var starty = 0;
       var endx = this.pin1.posx;
       var endy = this.pin1.posy;
 
-		//build visited nodes matrix
-		for(var i = 0; i < occupation.length; i++){
-			visited_nodes[i] = occupation[i].slice();
-			for(var k = 0; k < visited_nodes[i].length; k++){
-				var start = 0;
-				var end = 0;
+      //build visited nodes matrix
+      for(var i = 0; i < occupation.length; i++){
+         visited_nodes[i] = occupation[i].slice();
+         for(var k = 0; k < visited_nodes[i].length; k++){
+            var start = 0;
+            var end = 0;
 
             var fcost = 100000000;//heuristic dist to goal
 
             var val = {visited: visited_nodes[i][k], prevx:0, prevy:0, has_prev:0, gcost:0, fcost:fcost, posx:i, posy:k}
 
-				if(this.pin0.posx == i && this.pin0.posy == k){
-					startx = this.pin0.posx;
-					starty = this.pin0.posy;
+            if(this.pin0.posx == i && this.pin0.posy == k){
+               startx = this.pin0.posx;
+               starty = this.pin0.posy;
                list_to_handle.push(val);
-				}
+            }
 
-				visited_nodes[i][k] = val;
-			}
-		}
+            visited_nodes[i][k] = val;
+         }
+      }
 
 
       //max iterations of a*, lower the number is faster but wires will be shorter
-		for(var i = 0; i < 300; i++){
+      for(var i = 0; i < 300; i++){
 
          if(list_to_handle.length == 0){
             return false;
@@ -187,8 +187,8 @@ class Connexion{
          cur.visited = 1;
          cur.has_prev = 1;
 
-			//define which neighbour is good
-			var neigh = this.get_neighbours(cur, visited_nodes);
+         //define which neighbour is good
+         var neigh = this.get_neighbours(cur, visited_nodes);
 
          for (var u = 0; u < neigh.length; u++) {
             var new_gscore = cur.gcost + 1;
@@ -212,10 +212,10 @@ class Connexion{
             neigh[u].fcost = neigh[u].gcost + heuristic; //heuristic
          }
 
-		}
+      }
 
-		return false;
-	}
+      return false;
+   }
 
    //add wire to the list of wire in this class
    add_wire(cur, visited_nodes, startx, starty, endx, endy){
@@ -253,39 +253,39 @@ class Connexion{
          else if(prev.posy == cur.posy && cur.posy == next.posy && Math.random() > 0.98){
             cur.elem = "horizontal_capacitor";
          }
-			else if(prev.posx == cur.posx && cur.posx == next.posx && Math.random() > 0.98){
-				if(prev.posy < next.posy){
-					cur.elem = "down_diode";
-				}
+         else if(prev.posx == cur.posx && cur.posx == next.posx && Math.random() > 0.98){
+            if(prev.posy < next.posy){
+               cur.elem = "down_diode";
+            }
             else{
-					cur.elem = "up_diode";
-				}
+               cur.elem = "up_diode";
+            }
          }
-			else if(prev.posy == cur.posy && cur.posy == next.posy && Math.random() > 0.98){
+         else if(prev.posy == cur.posy && cur.posy == next.posy && Math.random() > 0.98){
             if(prev.posx < next.posx){
-					cur.elem = "right_diode";
-				}
+               cur.elem = "right_diode";
+            }
             else{
-					cur.elem = "left_diode";
-				}
+               cur.elem = "left_diode";
+            }
          }
       }
    }
 
    //returns list of neighbours
-	get_neighbours(node, visited_nodes){
-		var size_x = occupation.length;
-		var size_y = occupation[0].length;
-		var x = node.posx;
-		var y = node.posy;
-		var lst_ret = [];
+   get_neighbours(node, visited_nodes){
+      var size_x = occupation.length;
+      var size_y = occupation[0].length;
+      var x = node.posx;
+      var y = node.posy;
+      var lst_ret = [];
 
-		if(x-1 >= 0 && visited_nodes[x-1][y].visited == 0){
+      if(x-1 >= 0 && visited_nodes[x-1][y].visited == 0){
          lst_ret.push(visited_nodes[x-1][y]);
-		}
+      }
       if(x+1 < size_x && visited_nodes[x+1][y].visited == 0){
          lst_ret.push(visited_nodes[x+1][y]);
-		}
+      }
       if(y-1 >= 0 && visited_nodes[x][y-1].visited == 0){
          lst_ret.push(visited_nodes[x][y-1]);
       }
@@ -294,10 +294,10 @@ class Connexion{
       }
 
       return lst_ret;
-	}
+   }
 
    //dirty function, to be cleaned/factorized
-	draw(){
+   draw(){
       var canvas = document.getElementById("myCanvas");
       var ctx = canvas.getContext("2d");
 
@@ -311,10 +311,10 @@ class Connexion{
       ctx.lineTo(wire.endx, wire.endy);
       ctx.stroke();
 
-		for(var i = 1; i < this.lines.length-1; i++){
-			// ctx.beginPath();
-			// ctx.rect(this.lines[i].posx*cell_size[0], this.lines[i].posy*cell_size[1], cell_size[0], cell_size[1]);
-			// ctx.stroke();
+      for(var i = 1; i < this.lines.length-1; i++){
+         // ctx.beginPath();
+         // ctx.rect(this.lines[i].posx*cell_size[0], this.lines[i].posy*cell_size[1], cell_size[0], cell_size[1]);
+         // ctx.stroke();
 
          var prev = this.lines[i-1];
          var cur = this.lines[i];
@@ -322,16 +322,16 @@ class Connexion{
          var wire = this.find_first_wire_connect(prev, cur);
 
          ctx.beginPath();
-			ctx.moveTo(wire.startx, wire.starty);
-			ctx.lineTo(wire.endx, wire.endy);
-			ctx.stroke();
+         ctx.moveTo(wire.startx, wire.starty);
+         ctx.lineTo(wire.endx, wire.endy);
+         ctx.stroke();
 
          wire = this.find_second_wire_connect(cur, next);
 
          ctx.beginPath();
-			ctx.moveTo(wire.startx, wire.starty);
-			ctx.lineTo(wire.endx, wire.endy);
-			ctx.stroke();
+         ctx.moveTo(wire.startx, wire.starty);
+         ctx.lineTo(wire.endx, wire.endy);
+         ctx.stroke();
 
          if(cur.elem == "vertical_resistor"){
 
@@ -342,9 +342,9 @@ class Connexion{
 
             ctx.strokeStyle = "#000000";
             ctx.fillStyle = "#FFFFFF";
-      		ctx.fillRect(startx, starty, sizex, sizey);
+            ctx.fillRect(startx, starty, sizex, sizey);
             ctx.strokeRect(startx, starty, sizex, sizey);
-      		// ctx.stroke();
+            // ctx.stroke();
          }
          if(cur.elem == "horizonzal_resistor"){
 
@@ -355,9 +355,9 @@ class Connexion{
 
             ctx.strokeStyle = "#000000";
             ctx.fillStyle = "#FFFFFF";
-      		ctx.fillRect(startx, starty, sizex, sizey);
+            ctx.fillRect(startx, starty, sizex, sizey);
             ctx.strokeRect(startx, starty, sizex, sizey);
-      		// ctx.stroke();
+            // ctx.stroke();
          }
          if(cur.elem == "vertical_capacitor"){
 
@@ -369,8 +369,8 @@ class Connexion{
             ctx.strokeStyle = "#000000";
             ctx.fillStyle = "#FFFFFF";
             ctx.strokeRect(startx, starty, sizex, sizey);
-      		ctx.fillRect(startx-1, starty, sizex+2, sizey);
-      		// ctx.stroke();
+            ctx.fillRect(startx-1, starty, sizex+2, sizey);
+            // ctx.stroke();
          }
          if(cur.elem == "horizontal_capacitor"){
 
@@ -382,10 +382,10 @@ class Connexion{
             ctx.strokeStyle = "#000000";
             ctx.fillStyle = "#FFFFFF";
             ctx.strokeRect(startx, starty, sizex, sizey);
-      		ctx.fillRect(startx, starty-1, sizex, sizey+2);
-      		// ctx.stroke();
+            ctx.fillRect(startx, starty-1, sizex, sizey+2);
+            // ctx.stroke();
          }
-			if(cur.elem == "right_diode"){
+         if(cur.elem == "right_diode"){
 
             var startx = cur.posx*cell_size[0]+cell_size[0]*1/8;
             var starty = cur.posy*cell_size[1]+cell_size[1]*1/8;
@@ -396,17 +396,17 @@ class Connexion{
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(startx, starty, sizex, sizey);
 
-				ctx.beginPath();
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*6/8, cur.posy*cell_size[1]+cell_size[1]*4/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*6/8, cur.posy*cell_size[1]+cell_size[1]*1/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*6/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*6/8, cur.posy*cell_size[1]+cell_size[1]*4/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*6/8, cur.posy*cell_size[1]+cell_size[1]*1/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*6/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.stroke();
          }
-			if(cur.elem == "left_diode"){
-				var startx = cur.posx*cell_size[0]+cell_size[0]*2/8;
+         if(cur.elem == "left_diode"){
+            var startx = cur.posx*cell_size[0]+cell_size[0]*2/8;
             var starty = cur.posy*cell_size[1]+cell_size[1]*2/8;
             var sizex = cell_size[0]*5/8;
             var sizey = cell_size[1]*5/8;
@@ -415,16 +415,16 @@ class Connexion{
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(startx, starty, sizex, sizey);
 
-				ctx.beginPath();
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*2/8, cur.posy*cell_size[1]+cell_size[1]*4/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*2/8, cur.posy*cell_size[1]+cell_size[1]*1/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*2/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.stroke();
-			}
-			if(cur.elem == "down_diode" ){
+            ctx.beginPath();
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*2/8, cur.posy*cell_size[1]+cell_size[1]*4/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*2/8, cur.posy*cell_size[1]+cell_size[1]*1/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*2/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.stroke();
+         }
+         if(cur.elem == "down_diode" ){
             var startx = cur.posx*cell_size[0]+cell_size[0]/8;
             var starty = cur.posy*cell_size[1]+cell_size[1]/8;
             var sizex = cell_size[0]*5/8;
@@ -434,14 +434,14 @@ class Connexion{
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(startx, starty, sizex, sizey);
 
-				ctx.beginPath();
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*4/8, cur.posy*cell_size[1]+cell_size[1]*6/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*1/8, cur.posy*cell_size[1]+cell_size[1]*6/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*6/8);
-				ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*4/8, cur.posy*cell_size[1]+cell_size[1]*6/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]/8);
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*1/8, cur.posy*cell_size[1]+cell_size[1]*6/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*6/8);
+            ctx.stroke();
          }
          if(cur.elem == "up_diode"){
             var startx = cur.posx*cell_size[0]+cell_size[0]*2/8;
@@ -453,17 +453,17 @@ class Connexion{
             ctx.fillStyle = "#FFFFFF";
             ctx.fillRect(startx, starty, sizex, sizey);
 
-				ctx.beginPath();
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*4/8, cur.posy*cell_size[1]+cell_size[1]*2/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
-				ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*1/8, cur.posy*cell_size[1]+cell_size[1]*2/8);
-				ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*2/8);
-				ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*4/8, cur.posy*cell_size[1]+cell_size[1]*2/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]/8, cur.posy*cell_size[1]+cell_size[1]*7/8);
+            ctx.moveTo(cur.posx*cell_size[0]+cell_size[0]*1/8, cur.posy*cell_size[1]+cell_size[1]*2/8);
+            ctx.lineTo(cur.posx*cell_size[0]+cell_size[0]*7/8, cur.posy*cell_size[1]+cell_size[1]*2/8);
+            ctx.stroke();
          }
 
-		}
+      }
 
       var prev = this.lines[this.lines.length-2];
       var cur = this.lines[this.lines.length-1];
@@ -473,7 +473,7 @@ class Connexion{
       ctx.moveTo(wire.startx, wire.starty);
       ctx.lineTo(wire.endx, wire.endy);
       ctx.stroke();
-	}
+   }
 
    //for a tile, find correct orientation to draw the wire
    //ex: if previous wire tile is under current one, the current wire
@@ -544,7 +544,7 @@ class End_Element{
 
    draw(){
       var canvas = document.getElementById("myCanvas");
-		var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext("2d");
       if(this.type == "GND"){
          ctx.strokeStyle = "#000000";
          ctx.fillStyle = "#FFFFFF";
@@ -619,7 +619,7 @@ class Transistor{
 
    draw(){
       var canvas = document.getElementById("myCanvas");
-		var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext("2d");
       ctx.strokeStyle = "#000000";
       ctx.fillStyle = "#FFFFFF";
       ctx.fillRect(this.posx*cell_size[0], this.posy*cell_size[1], cell_size[0]*3, cell_size[1]*3);
@@ -646,7 +646,7 @@ class Transistor{
    //dirty function, values were calculated on a sheet of paper and hard coded here
    draw_picture(rot_mat){
       var canvas = document.getElementById("myCanvas");
-		var ctx = canvas.getContext("2d");
+      var ctx = canvas.getContext("2d");
       ctx.beginPath();
       ctx.arc(this.posx*cell_size[0]+cell_size[0]*3/2, this.posy*cell_size[1]+cell_size[1]*3/2, cell_size[0]*3/2, 0, 2 * Math.PI);
       ctx.stroke();
@@ -756,7 +756,7 @@ class OpAmp{
    //dirty function, values were calculated on a sheet of paper and hard coded here
    draw_picture(rot_mat){
       var canvas = document.getElementById("myCanvas");
-  		var ctx = canvas.getContext("2d");
+        var ctx = canvas.getContext("2d");
       // ctx.beginPath();
       // ctx.arc(this.posx*cell_size[0]+cell_size[0]*3/2, this.posy*cell_size[1]+cell_size[1]*3/2, cell_size[0]*3/2, 0, 2 * Math.PI);
       // ctx.stroke();
@@ -807,29 +807,29 @@ nb_opamp = 7;
 occupation = [];
 
 for(x = 0; x < grid_size[0]+10; x++){
-	array = [];
-	for(y = 0; y < grid_size[1]+10; y++){
-		array.push(0);
-	}
-	occupation.push(array);
+   array = [];
+   for(y = 0; y < grid_size[1]+10; y++){
+      array.push(0);
+   }
+   occupation.push(array);
 }
 
 var counter = 0
 for(x = 0; x < nb_chips_side_x; x++){
-	for(y = 0; y < nb_chips_side_y; y++){
-		rand = Math.random();
+   for(y = 0; y < nb_chips_side_y; y++){
+      rand = Math.random();
       var chip = new Chip(Math.random()*20+40*x, Math.random()*7+20*y, 9+Math.random()*10, 5+Math.random()*7)
       chip.set_text("chip"+counter);
       counter++;
-		lst_chip.push(chip);
-	}
+      lst_chip.push(chip);
+   }
 }
 
 for(i = 0; i < nb_chips; i++){
-	lst_chip[i].draw();
-	for(j = 0; j < lst_chip[i].pins.length; j++){
-		lst_chip[i].pins[j].draw();
-	}
+   lst_chip[i].draw();
+   for(j = 0; j < lst_chip[i].pins.length; j++){
+      lst_chip[i].pins[j].draw();
+   }
 }
 
 for (var i = 0; i < nb_transistors; i++) {
@@ -949,8 +949,8 @@ for (var i = 0; i < lst_pins.length; i++) {
    lst_chip_dst.sort(function(a, b){return a.dist-b.dist}); //smallest first
 
    for (var l = 0; l < 4; l++) { //only take nearest chips
-   	var endelem = lst_pins[i];
-   	var pins1 = lst_chip_dst[l].chip.pins;
+      var endelem = lst_pins[i];
+      var pins1 = lst_chip_dst[l].chip.pins;
 
       var lst_pin_dist = [];
       for(j = 0; j < pins1.length; j++){
@@ -959,17 +959,17 @@ for (var i = 0; i < lst_pins.length; i++) {
       }
       lst_pin_dist.sort(function(a, b){return a.dist-b.dist}); //smallest first
 
-   	for(j = 0; j < pins1.length; j++){
-			var pin1 = lst_pin_dist[j].pin;
-   		if(endelem.used == 0 && pin1.used == 0 && Math.random() > 0.0){
-   			connexion = new Connexion(pin1, endelem);
-   			if(connexion.find_connexion()){
-   				lst_connexion.push(connexion);
-   				endelem.used = 1;
-   				pin1.used = 1;
-   			}
-   		}
-   	}
+      for(j = 0; j < pins1.length; j++){
+         var pin1 = lst_pin_dist[j].pin;
+         if(endelem.used == 0 && pin1.used == 0 && Math.random() > 0.0){
+            connexion = new Connexion(pin1, endelem);
+            if(connexion.find_connexion()){
+               lst_connexion.push(connexion);
+               endelem.used = 1;
+               pin1.used = 1;
+            }
+         }
+      }
    }
 }
 
@@ -977,31 +977,31 @@ for (var i = 0; i < lst_pins.length; i++) {
 for(i = 0; i < nb_chips; i++){
 
    for (var l = 1; l < nb_chips; l++) {
-   	var pins0 = lst_chip[i].pins;
-   	var pins1 = lst_chip[(i+l)%nb_chips].pins;
-   	var nb_pins = Math.min(pins0.length, pins1.length);
-		var pins_zip = [];
+      var pins0 = lst_chip[i].pins;
+      var pins1 = lst_chip[(i+l)%nb_chips].pins;
+      var nb_pins = Math.min(pins0.length, pins1.length);
+      var pins_zip = [];
 
-		for(j = 0; j < nb_pins; j++){
+      for(j = 0; j < nb_pins; j++){
          for(k = 0; k < nb_pins; k++){
             var weight = Math.sqrt(Math.pow(pins0[j].posx-pins1[k].posx, 2)+Math.pow(pins0[j].posy-pins1[k].posy, 2));
-   			pins_zip.push({weight:weight, pin0:pins0[j], pin1:pins1[k]});
+            pins_zip.push({weight:weight, pin0:pins0[j], pin1:pins1[k]});
          }
-		}
+      }
       pins_zip.sort(function(a, b){return a.weight-b.weight}); //smallest first
 
-   	for(j = 0; j < nb_pins; j++){
-			var pin0 = pins_zip[j].pin0;
-			var pin1 = pins_zip[j].pin1;
-   		if(pin0.used == 0 && pin1.used == 0 && Math.random() > 0.0){
-   			connexion = new Connexion(pin0, pin1);
-   			if(connexion.find_connexion()){
-   				lst_connexion.push(connexion);
-   				pin0.used = 1;
-   				pin1.used = 1;
-   			}
-   		}
-   	}
+      for(j = 0; j < nb_pins; j++){
+         var pin0 = pins_zip[j].pin0;
+         var pin1 = pins_zip[j].pin1;
+         if(pin0.used == 0 && pin1.used == 0 && Math.random() > 0.0){
+            connexion = new Connexion(pin0, pin1);
+            if(connexion.find_connexion()){
+               lst_connexion.push(connexion);
+               pin0.used = 1;
+               pin1.used = 1;
+            }
+         }
+      }
    }
 }
 
@@ -1033,15 +1033,15 @@ for (var i = 0; i < lst_opamp.length; i++) {
 
 //draw occupation
 for(x = 0; x < grid_size[0]; x++){
-	for(y = 0; y < grid_size[1]; y++){
-		if(occupation[x][y] == 1){
-			var canvas = document.getElementById("myCanvas");
-			var ctx = canvas.getContext("2d");
-			ctx.beginPath();
-			ctx.rect(x*cell_size[0], y*cell_size[1], cell_size[0], cell_size[1]);
-			ctx.fillStyle = "red";
+   for(y = 0; y < grid_size[1]; y++){
+      if(occupation[x][y] == 1){
+         var canvas = document.getElementById("myCanvas");
+         var ctx = canvas.getContext("2d");
+         ctx.beginPath();
+         ctx.rect(x*cell_size[0], y*cell_size[1], cell_size[0], cell_size[1]);
+         ctx.fillStyle = "red";
          //uncomment to see occupation
-			//ctx.fill();
-		}
-	}
+         //ctx.fill();
+      }
+   }
 }
