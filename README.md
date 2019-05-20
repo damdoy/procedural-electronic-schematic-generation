@@ -1,3 +1,5 @@
+[Try it here](https://damdoy.github.io/procedural-electronic-schematic-generation/schematic_gen.html)
+
 ## Procedural electronic schematic generation
 
 The goal of this project was to create, quickly (few evenings) and using javascript, a small program
